@@ -25,7 +25,7 @@ class Map(object):
             [12.0, 12.0]
         ])
         self.locus = np.vstack(([self.assemble],))
-        self.goal = np.array([0, 0])
+        self.goal = np.array([30, 30])
 
     def update(self):#会动的障碍物
         for i in self.assemble:

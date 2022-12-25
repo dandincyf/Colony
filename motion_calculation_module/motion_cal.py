@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import math
 
 class Motion_Cal(object):
-    def __init__(self):
-        self.uav_main = Uav(0.5,0.1)
-        self.map = Map()
+    def __init__(self,uav,map):
+        self.uav_main = uav
+        self.map = map
         self.predicttime = 3
         self.to_goal_coeff = 1.0
         self.velocity_coeff = 1.0
@@ -32,8 +32,8 @@ class Motion_Cal(object):
     def motion_windows(self):
         current_velocity = self.uav_main.uav[-1].velocity
         current_yawrate = self.uav_main.uav[-1].yawrate
-        maxvelocity = np.min([self.uav_main.maxvelocity, current_velocity + self.uav_main.maxlinearacc * self.dt])
-        minvelocity = np.max([self.uav_main.minvelocity, current_velocity - self.uav_main.maxlinearacc * self.dt])
+        maxvelocity = current_velocity + self.uav_main.maxlinearacc * self.dt
+        minvelocity = current_velocity - self.uav_main.maxlinearacc * self.dt
         maxyawrate = current_yawrate + self.uav_main.maxdyawrate * self.dt
         minyawrate = current_yawrate - self.uav_main.maxdyawrate * self.dt
 
@@ -97,9 +97,9 @@ class Motion_Cal(object):
                 time.sleep(100000)
 
 class Follow_Cal(object):
-    def __init__(self):
-        self.uav_follow = Uav(2,0.1)
-        self.map = Map()
+    def __init__(self,uav,map):
+        self.uav_follow = uav
+        self.map = map
         self.predicttime = 3
         self.to_goal_coeff = 1.0
         self.velocity_coeff = 1.0
@@ -124,8 +124,8 @@ class Follow_Cal(object):
     def motion_windows(self):
         current_velocity = self.uav_follow.uav[-1].velocity
         current_yawrate = self.uav_follow.uav[-1].yawrate
-        maxvelocity = np.min([self.uav_follow.maxvelocity, current_velocity + self.uav_follow.maxlinearacc * self.dt])
-        minvelocity = np.max([self.uav_follow.minvelocity, current_velocity - self.uav_follow.maxlinearacc * self.dt])
+        maxvelocity = current_velocity + self.uav_follow.maxlinearacc * self.dt
+        minvelocity = current_velocity - self.uav_follow.maxlinearacc * self.dt
         maxyawrate = current_yawrate + self.uav_follow.maxdyawrate * self.dt
         minyawrate = current_yawrate - self.uav_follow.maxdyawrate * self.dt
 

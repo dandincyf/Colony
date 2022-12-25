@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 import math
 
 class Motion_Cal(object):
-    def __init__(self):
-        self.uav_main = Uav(0.5,0.1)
-        self.map = Map()
-        self.predicttime = 3
+    def __init__(self,uav,map):
+        self.uav_main = uav
+        self.map = map
+        self.predicttime = 1
         self.to_goal_coeff = 1.0
         self.velocity_coeff = 1.0
         self.dt = 0.1
+        self.goal = np.array([0,0])
 
     # ------------------------------------
     # 运动函数
@@ -22,8 +23,7 @@ class Motion_Cal(object):
                            velocity,
                            self.uav_main.uav[-1].yaw + yawrate * self.dt,
                            yawrate,
-                           (yawrate - self.uav_main.uav[-1].yawrate) / self.dt,
-                           0)
+                           (yawrate - self.uav_main.uav[-1].yawrate) / self.dt)
         self.uav_main.uav.append(temp_state)
         return temp_state
 
@@ -32,17 +32,17 @@ class Motion_Cal(object):
     def motion_windows(self):
         current_velocity = self.uav_main.uav[-1].velocity
         current_yawrate = self.uav_main.uav[-1].yawrate
-        maxvelocity = np.min([self.uav_main.maxvelocity, current_velocity + self.uav_main.maxlinearacc * self.dt])
-        minvelocity = np.max([self.uav_main.minvelocity, current_velocity - self.uav_main.maxlinearacc * self.dt])
-        maxyawrate = current_yawrate + self.uav_main.maxdyawrate * self.dt
-        minyawrate = current_yawrate - self.uav_main.maxdyawrate * self.dt
+        maxvelocity = current_velocity + self.uav_main.maxlinearacc * self.predicttime
+        minvelocity = current_velocity - self.uav_main.maxlinearacc * self.predicttime
+        maxyawrate = current_yawrate + self.uav_main.maxdyawrate * self.predicttime
+        minyawrate = current_yawrate - self.uav_main.maxdyawrate * self.predicttime
 
         return np.array([minvelocity, maxvelocity, minyawrate, maxyawrate])
 
     # ------------------------------------
     # 三项成本函数的定义-------------------
     def cost_goal(self, locus):
-        return distance(np.array([locus[-1].x, locus[-1].y]), self.map.goal) * self.to_goal_coeff
+        return distance(np.array([locus[-1].x, locus[-1].y]), self.goal) * self.to_goal_coeff
 
     def cost_velocity(self, locus):
         return (self.uav_main.maxvelocity - locus[-1].velocity) * self.velocity_coeff
@@ -71,6 +71,7 @@ class Motion_Cal(object):
             for ii in np.arange(windows[2], windows[3], self.uav_main.yawrateres):  # 遍历角速度
                 locus = []
                 t = 0
+
                 while (t <= self.predicttime):  # 预测3s后的位置
                     locus.append(self.motion(i, ii))
                     t = t + self.dt
@@ -79,10 +80,9 @@ class Motion_Cal(object):
                     currentcost = newcost
                     best_uv = [i, ii]
                     best_locus = locus[:]
+                    best_locus[0].cost = currentcost
                 self.uav_main.uav = inituav[:]
-            self.uav_main.uav = inituav[:]
 
-        self.uav_main.uav = inituav[:]
         return best_locus, best_uv, currentcost
 
     # -------------------------------------------------------------------
@@ -96,14 +96,19 @@ class Motion_Cal(object):
                 print("over!")
                 time.sleep(100000)
 
+    #更新goal坐标
+    def update_goal(self,goal):
+        self.goal = goal
+
 class Follow_Cal(object):
-    def __init__(self):
-        self.uav_follow = Uav(2,0.1)
-        self.map = Map()
-        self.predicttime = 3
-        self.to_goal_coeff = 1.0
+    def __init__(self,uav,map):
+        self.uav_follow = uav
+        self.map = map
+        self.predicttime = 2
+        self.to_goal_coeff = 100.0
         self.velocity_coeff = 1.0
-        self.dt = 0.1
+        self.dt = 1
+        self.goal = np.array([0,0])
 
     # ------------------------------------
     # 运动函数
@@ -114,7 +119,6 @@ class Follow_Cal(object):
                            velocity,
                            self.uav_follow.uav[-1].yaw + yawrate * self.dt,
                            yawrate,
-                           (yawrate - self.uav_follow.uav[-1].yawrate) / self.dt,
                            0)
         self.uav_follow.uav.append(temp_state)
         return temp_state
@@ -124,17 +128,17 @@ class Follow_Cal(object):
     def motion_windows(self):
         current_velocity = self.uav_follow.uav[-1].velocity
         current_yawrate = self.uav_follow.uav[-1].yawrate
-        maxvelocity = np.min([self.uav_follow.maxvelocity, current_velocity + self.uav_follow.maxlinearacc * self.dt])
-        minvelocity = np.max([self.uav_follow.minvelocity, current_velocity - self.uav_follow.maxlinearacc * self.dt])
-        maxyawrate = current_yawrate + self.uav_follow.maxdyawrate * self.dt
-        minyawrate = current_yawrate - self.uav_follow.maxdyawrate * self.dt
+        maxvelocity = current_velocity + self.uav_follow.maxlinearacc * self.predicttime
+        minvelocity = current_velocity - self.uav_follow.maxlinearacc * self.predicttime
+        maxyawrate = current_yawrate + self.uav_follow.maxdyawrate * self.predicttime
+        minyawrate = current_yawrate - self.uav_follow.maxdyawrate * self.predicttime
 
         return np.array([minvelocity, maxvelocity, minyawrate, maxyawrate])
 
     # ------------------------------------
     # 成本函数
     def cost_goal(self, locus):
-        return distance(np.array([locus[-1].x, locus[-1].y]), self.map.goal) * self.to_goal_coeff
+        return distance(np.array([locus[-1].x, locus[-1].y]), self.goal) * self.to_goal_coeff
 
     def cost_velocity(self, locus):
         return (self.uav_follow.maxvelocity - locus[-1].velocity) * self.velocity_coeff
@@ -148,7 +152,7 @@ class Follow_Cal(object):
         return 1.0 / np.min(dis_np)
 
     def cost_total(self, locus):
-        return self.cost_goal(locus) + self.cost_velocity(locus) + self.cost_obstacle(locus)
+        return self.cost_goal(locus) + self.cost_velocity(locus) * 0 + self.cost_obstacle(locus) * 0
 
     # -----------------------------------
     # 遍历轨迹
@@ -163,6 +167,7 @@ class Follow_Cal(object):
             for ii in np.arange(windows[2], windows[3], self.uav_follow.yawrateres):  # 遍历角速度
                 locus = []
                 t = 0
+
                 while (t <= self.predicttime):  # 预测3s后的位置
                     locus.append(self.motion(i, ii))
                     t = t + self.dt
@@ -171,10 +176,9 @@ class Follow_Cal(object):
                     currentcost = newcost
                     best_uv = [i, ii]
                     best_locus = locus[:]
+                    best_locus[0].cost = currentcost
                 self.uav_follow.uav = inituav[:]
-            self.uav_follow.uav = inituav[:]
 
-        self.uav_follow.uav = inituav[:]
         return best_locus, best_uv, currentcost
 
     # -------------------------------------------------------------------
@@ -188,6 +192,9 @@ class Follow_Cal(object):
                 print("over!")
                 time.sleep(100000)
 
+    # 更新goal坐标
+    def update_goal(self, goal):
+        self.goal = goal
 
 # -----------------------------------------------------------------
 def distance(point1, point2):

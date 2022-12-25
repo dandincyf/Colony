@@ -5,30 +5,30 @@ import numpy as np
 # 地图类
 class Map(object):
     def __init__(self):
+        # self.assemble = 3 * np.array([
+        #     [-1, -1],
+        #     [0, 2],
+        #     [2.0, 2.0],
+        #     [2.0, 1.0],
+        #     [3.0, 4.0],
+        #     [2.5, 4.0],
+        #     [2.0, 5.0],
+        #     [5.0, 2.5],
+        #     [5.0, 6.0],
+        #     [5.0, 5.0],
+        #     [6.0, 6.0],
+        #     [7.0, 6.0],
+        #     [10.0, 8.0],
+        #     [10.0, 4.0],
+        #     [8.0, 9.0],
+        #     [7.0, 9.0],
+        #     [12.0, 12.0]
+        # ])
         self.assemble = 3 * np.array([
             [-1, -1],
-            [0, 2],
-            [2.0, 2.0],
-            [2.0, 1.0],
-            [3.0, 4.0],
-            [2.5, 4.0],
-            [2.0, 5.0],
-            [5.0, 2.5],
-            [5.0, 6.0],
-            [5.0, 5.0],
-            [6.0, 6.0],
-            [7.0, 6.0],
-            [10.0, 8.0],
-            [10.0, 4.0],
-            [8.0, 9.0],
-            [7.0, 9.0],
-            [12.0, 12.0]
         ])
         self.locus = np.vstack(([self.assemble],))
-        self.goal = np.array([0, 0])
-        self.obstacle = np.array([[0, 0]])
-        self.obstacle_windows = np.array([[0, 0]])
-
+        # self.goal = np.array([0, 0])
 
     def update(self):#会动的障碍物
         for i in self.assemble:
@@ -37,7 +37,7 @@ class Map(object):
             i[1] = i[1] + 0.2 * np.sin(alpha)
         self.locus = np.vstack((self.locus, [self.assemble]))
 
-    def returnlocus(self, index):
+    def returnlocus(self, index): #
         lx = []
         ly = []
         for i in self.locus:
@@ -45,9 +45,6 @@ class Map(object):
             ly.append(i[index][1])
         return lx, ly
 
-    def initialgoal(self, goal):
-        self.goal = goal
-
-    def initialmap(self, map):
-        self.obstacle = map.assemble
+    def initialobstacle(self):
+        self.obstacle = self.assemble
 

@@ -59,14 +59,14 @@ if __name__ == '__main__':
             best_locus, best_uv, cost = motion_mana.motion_cal.search_for_best_uv() #计算主机的最佳位置、最佳速度、成本
             print('i=',i)
             for j in range(info_mana.follow_num): #计算僚机的最佳位置、最佳速度、成本
-                if i < 30:
+                if i < 35:
                     motion_mana.follow_cals[j].update_goal(np.array([best_locus[0].x + 3 * math.cos((j+1) *
                             2 * math.pi / (info_mana.follow_num+1)), best_locus[0].y + 3 * math.sin((j+1) *
                             2 * math.pi / (info_mana.follow_num+1))])) # 僚机的目标点
-                elif i >= 30 and i < 60:
+                elif i >= 35 and i < 70:
                     motion_mana.follow_cals[j].update_goal(np.array([best_locus[0].x + 1.5*j ,
                                                                      best_locus[0].y])) # 僚机的目标点
-                elif i >= 60:
+                elif i >= 70:
                     motion_mana.follow_cals[j].update_goal(np.array([best_locus[0].x - 1.5*j ,
                                                                      best_locus[0].y - 1.5*j])) # 僚机的目标点
                 best_follow_locus[j], best_uvs[j], costs[j] = motion_mana.follow_cals[j].search_for_best_uv()

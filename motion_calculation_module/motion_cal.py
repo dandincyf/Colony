@@ -13,6 +13,7 @@ class Motion_Cal(object):
         self.velocity_coeff = 1.0
         self.dt = 0.1
         self.goal = np.array([0,0])
+        self.detection_radius = 4.0
 
     # ------------------------------------
     # 运动函数
@@ -47,13 +48,18 @@ class Motion_Cal(object):
     def cost_velocity(self, locus):
         return (self.uav_main.maxvelocity - locus[-1].velocity) * self.velocity_coeff
 
+    #避障策略，只考虑感受野范围内的障碍物
     def cost_obstacle(self, locus):
         dis = []
         for i in locus:
             for ii in self.map.obstacle:
-                dis.append(distance(np.array([i.x, i.y]), ii))
+                if distance(np.array([i.x, i.y]), ii) < 4:
+                    dis.append(distance(np.array([i.x, i.y]), ii))
         dis_np = np.array(dis)
-        return 1.0 / np.min(dis_np)
+        if len(dis_np) == 0:
+            return 0.0
+        else:
+            return 1.0 / np.min(dis_np)
 
     def cost_total(self, locus):
         return self.cost_goal(locus) + self.cost_velocity(locus) + self.cost_obstacle(locus)
@@ -99,6 +105,18 @@ class Motion_Cal(object):
     #更新goal坐标
     def update_goal(self,goal):
         self.goal = goal
+        
+    def random_search(self):
+        track_points = []
+        for point in track_points:
+            self.goal.append(point)
+        # alg()
+    
+    def get_obj(self):
+        if distance(self.map.object, self.loc) <= self.detection_radius:
+            return self.map.nearest_point()
+        else:
+            return False
 
 class Follow_Cal(object):
     def __init__(self,uav,map):

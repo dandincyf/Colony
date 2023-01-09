@@ -5,30 +5,36 @@ import numpy as np
 # 地图类
 class Map(object):
     def __init__(self):
-        # self.assemble = 3 * np.array([
-        #     [-1, -1],
-        #     [0, 2],
-        #     [2.0, 2.0],
-        #     [2.0, 1.0],
-        #     [3.0, 4.0],
-        #     [2.5, 4.0],
-        #     [2.0, 5.0],
-        #     [5.0, 2.5],
-        #     [5.0, 6.0],
-        #     [5.0, 5.0],
-        #     [6.0, 6.0],
-        #     [7.0, 6.0],
-        #     [10.0, 8.0],
-        #     [10.0, 4.0],
-        #     [8.0, 9.0],
-        #     [7.0, 9.0],
-        #     [12.0, 12.0]
-        # ])
-        self.assemble = 3 * np.array([
-            [-1, -1],
+        self.assemble = np.array([
+            [10, 10],
+            [20.0, 20.0],
+            [6.0, 16.0],
+            [16.0, 6.0],
+            [30.0, 30.0],
+            [28.0, 26.0],
+            [18.0, 22.0],
+        ])
+        self.assemble1 = np.array([
+            [10, 10],
+            [20.0, 20.0],
+            [6.0, 7.0],
+            [12.0, 8.0],
+            [30.0, 30.0],
+            [28.0, 26.0],
+            [18.0, 22.0],
+            [12.0, 15.0],
+            [15.0, 15.0],
+            [22.0, 18.0],
+            [7.0, 9.0],
+            [33.0, 30.0],
+            [23.0, 24.0],
+            [18.0, 25.0],
+            [5.0, 5.0],
+            [8.0, 3.0],
+            [3.0, 8.0],
+            [2.0, 2.0],
         ])
         self.locus = np.vstack(([self.assemble],))
-        # self.goal = np.array([0, 0])
 
     def update(self):#会动的障碍物
         for i in self.assemble:
@@ -47,4 +53,10 @@ class Map(object):
 
     def initialobstacle(self):
         self.obstacle = self.assemble
+        
+    def initialobject(self):
+        self.object = np.array([37,37])
+
+    def multi_obstacles(self):
+        self.obstacle = self.assemble1 #用在show_avoid_obstacles的障碍物设置中
 
